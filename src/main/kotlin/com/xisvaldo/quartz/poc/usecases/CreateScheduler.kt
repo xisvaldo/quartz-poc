@@ -1,32 +1,25 @@
-package com.xisvaldo.quartz.poc.controller
+package com.xisvaldo.quartz.poc.usecases
 
-import com.xisvaldo.quartz.poc.job.SimpleJob
+import com.xisvaldo.quartz.poc.adapters.job.SimpleJob
 import org.quartz.*
 import org.quartz.impl.matchers.GroupMatcher
-import org.springframework.web.bind.annotation.*
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.util.*
 
-@RestController
-@RequestMapping("/scheduler")
-class SchedulerController(@Qualifier("QuartzScheduler") private val scheduler:Scheduler) {
+class CreateScheduler(private val scheduler: Scheduler) {
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    fun createSchedule(@RequestBody payload: SchedulerPayload) {
-        val job = newJob(identity = payload.identity, description = payload.description)
+    operator fun invoke(schedulerInput: SchedulerInput) {
+        val job = newJob(identity = schedulerInput.identity, description = schedulerInput.description)
         scheduler.scheduleJob(
             job,
-            setOf(trigger(jobDetail = job, intervalInSeconds = payload.intervalInSeconds)),
+            setOf(triggerJob(jobDetail = job, intervalInSeconds = schedulerInput.intervalInSeconds)),
             true
         )
     }
 
-    fun newJob(identity: String, description: String): JobDetail =
+    private fun newJob(identity: String, description: String): JobDetail =
         JobBuilder.newJob()
             .ofType(SimpleJob::class.java)
             .storeDurably()
@@ -37,25 +30,26 @@ class SchedulerController(@Qualifier("QuartzScheduler") private val scheduler:Sc
     /**
      * TODO: split it into a dedicate class (scheduler/job creation/trigger creation) or even at kotlin-commons
      */
-    fun trigger(jobDetail: JobDetail, intervalInSeconds: Int): SimpleTrigger {
-        val existentJobNextTriggerDate = getExistentJobNextTrigger()
+    private fun triggerJob(jobDetail: JobDetail, intervalInSeconds: Int): SimpleTrigger {
+        val existentJobNextTriggerDate = getExistentJobNextTriggerDate()
         val startTime: Date
         if (existentJobNextTriggerDate == null) {
             startTime = Date.from(LocalDate.now().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant())
         } else {
             startTime = existentJobNextTriggerDate
-            startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+            startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
                 .plus(intervalInSeconds.toLong(), ChronoUnit.SECONDS)
         }
+
         return TriggerBuilder.newTrigger()
             .forJob(jobDetail)
             .withIdentity(jobDetail.key.name, jobDetail.key.group)
             .withSchedule(SimpleScheduleBuilder.repeatSecondlyForever(intervalInSeconds))
-            .startAt(startTime)// TODO test if this method can prevent that the new cron be triggered immediately
+            .startAt(startTime) // TODO test if this method can prevent that the new cron be triggered immediately
             .build()
     }
 
-    fun getExistentJobNextTrigger(): Date? {
+    private fun getExistentJobNextTriggerDate(): Date? {
         for (group in scheduler.jobGroupNames) {
             for (jobKey in scheduler.getJobKeys(GroupMatcher.jobGroupEquals(group))) {
                 return scheduler.getTriggersOfJob(jobKey).first().nextFireTime
@@ -63,6 +57,4 @@ class SchedulerController(@Qualifier("QuartzScheduler") private val scheduler:Sc
         }
         return null
     }
-
-    data class SchedulerPayload(val identity: String, val description: String, val intervalInSeconds: Int)
 }

@@ -1,4 +1,4 @@
-package com.xisvaldo.quartz.poc.job
+package com.xisvaldo.quartz.poc.adapters.job
 
 import com.sun.istack.internal.logging.Logger
 import org.quartz.Job

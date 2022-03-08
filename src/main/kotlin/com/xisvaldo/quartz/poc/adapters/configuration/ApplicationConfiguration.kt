@@ -1,5 +1,6 @@
-package com.xisvaldo.quartz.poc.configuration
+package com.xisvaldo.quartz.poc.adapters.configuration
 
+import com.xisvaldo.quartz.poc.usecases.CreateScheduler
 import org.quartz.Scheduler
 import org.quartz.spi.TriggerFiredBundle
 import org.springframework.beans.factory.annotation.Qualifier
@@ -36,4 +37,7 @@ class ApplicationConfiguration {
         scheduler.start()
         return scheduler
     }
+
+    @Bean
+    fun getCreateScheduler(@Qualifier("QuartzScheduler") scheduler: Scheduler) = CreateScheduler(scheduler)
 }
