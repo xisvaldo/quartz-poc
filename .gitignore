@@ -1,0 +1,20 @@
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+# Package Files #
+*.jar
+
+*.bak
+
+*.iml
+.idea
+*/out
+
+build/
+
+.gradle/
+gradle.properties
+!gradle-wrapper.jar

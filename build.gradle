@@ -1,0 +1,19 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.6.10'
+    id "org.jetbrains.kotlin.plugin.spring" version '1.6.10'
+    id "org.springframework.boot" version '2.6.1'
+}
+
+group 'com.xisvaldo.quartz.poc'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.6.10"
+    implementation "org.springframework.boot:spring-boot-starter-web:2.6.4"
+    implementation "org.springframework.boot:spring-boot-starter-quartz:2.6.4"
+    implementation "org.quartz-scheduler:quartz:2.3.2"
+}
