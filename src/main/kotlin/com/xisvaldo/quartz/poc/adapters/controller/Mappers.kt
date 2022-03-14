@@ -1,6 +1,6 @@
 package com.xisvaldo.quartz.poc.adapters.controller
 
-import com.xisvaldo.quartz.poc.usecases.SchedulerInput
+import com.xisvaldo.quartz.poc.usecases.UpsertSchedulerInput
 
 fun SchedulerRequestBody.toUseCase() =
-    SchedulerInput(identity = identity, description = description, intervalInSeconds = intervalInSeconds)
+    UpsertSchedulerInput(identity = identity, description = description, intervalInSeconds = intervalInSeconds)

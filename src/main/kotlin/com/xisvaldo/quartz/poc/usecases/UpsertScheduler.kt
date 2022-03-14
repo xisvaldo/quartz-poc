@@ -1,22 +1,34 @@
 package com.xisvaldo.quartz.poc.usecases
 
 import com.xisvaldo.quartz.poc.adapters.job.SimpleJob
+import com.xisvaldo.quartz.poc.adapters.persistence.SchedulingRepository
+import com.xisvaldo.quartz.poc.entities.Scheduling
 import org.quartz.*
 import org.quartz.impl.matchers.GroupMatcher
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.util.*
 
-class CreateScheduler(private val scheduler: Scheduler) {
+class UpsertScheduler(private val scheduler: Scheduler, private val schedulingRepository: SchedulingRepository) {
 
-    operator fun invoke(schedulerInput: SchedulerInput) {
+    operator fun invoke(schedulerInput: UpsertSchedulerInput) {
         val job = newJob(identity = schedulerInput.identity, description = schedulerInput.description)
         scheduler.scheduleJob(
             job,
             setOf(triggerJob(jobDetail = job, intervalInSeconds = schedulerInput.intervalInSeconds)),
             true
         )
+        with(schedulerInput) {
+            val scheduling = Scheduling(
+                identity = identity,
+                description = description,
+                startTime = LocalDateTime.now(),
+                intervalInSeconds = intervalInSeconds
+            )
+            schedulingRepository.save(scheduling)
+        }
     }
 
     private fun newJob(identity: String, description: String): JobDetail =
