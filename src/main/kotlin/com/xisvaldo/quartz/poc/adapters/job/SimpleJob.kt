@@ -4,7 +4,7 @@ import com.sun.istack.internal.logging.Logger
 import org.quartz.Job
 import org.quartz.JobExecutionContext
 
-const val EXECUTION_TIME = 5000L;
+const val EXECUTION_TIME = 15000L;
 
 class SimpleJob : Job {
     private val logger = Logger.getLogger(SimpleJob::class.java)
